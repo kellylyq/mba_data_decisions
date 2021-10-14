@@ -1,0 +1,134 @@
+---
+title: "RedFin Housing Prices for Mar vista"
+Date: "10/13/2021"
+author: "Section: B  Learning Team: 8  Students: Alex MarMureanu, Caldwell Clarke, Lyle Seebeck, Kelly Li, Joaquin Trucco"
+
+output: github_document
+---
+
+
+##### Mount up
+```{r, message = FALSE}
+library(tidyverse)
+library(ggridges)
+library(jtools)
+library(lmtest)
+```
+
+##### Get the data set up
+``` {r}
+HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/redfin_2021-10-12-12-54-17.csv", 
+                   stringsAsFactors = T)
+```
+
+##### Notes on data selection
+* We're looking at single family homes in the Mar Vista area of LA that have been sold in the last 12 months. 
+* We have included:
+  + CITY - we're curious if an LA versus MV address makes a difference
+  + PRICE - total paid in last purchase
+  + BEDS - number of bedrooms
+  + BATHS - number of bathrooms
+  + SQUARE.FEET - total square footage of the house itself
+  + LOT.SIZE -total square footage of the property
+  + YEAR.BUILT - how old the house is
+
+* We have ignored a variety of data points, which we'll explain below:
+  + SALE.TYPE - all houses are sold
+  + SOLD.DATE - this is a categorical variable, so the regression cannot run this variable as time-based, which renders it pretty useless
+  + PROPERTY.TYPE - All houses in this set are single-family residential
+  + ADDRESS - again, this is one-off categorical data, and is not related to location in the regression
+  + STATE.OR.PROVINCE - its all CA
+  + ZIP.OR.POSTAL.CODE - because this is numerical, rather than categorical, we would get a trend line for numeric growth in zip
+  + LOCATION - this tries to split between Mar Vista, Palms, etc. but the data set is very incomplete and has varying notation
+  + DAYS.ON.MARKET - we expect this to drop prices, but the data set is pretty incomplete
+  + X..SQUARE.FEET - $/Square Feet
+  + The remaining fields are internal and not useful
+
+##### Regression based on variables selected
+```{r}
+Regression1 = lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET + LOT.SIZE + YEAR.BUILT, data = HOUSES)
+summ(Regression1, digits=3)
+```
+  
+##### Problem 1
+> For each house, calculate the price per square foot. What is the average price per square foot in your
+selected city?
+
+```{r prob1}
+HOUSES<- HOUSES %>% mutate(Price_sf = PRICE/SQUARE.FEET)
+avg_Price_sf <- mean(HOUSES$Price_sf,na.rm = T)
+print(avg_Price_sf)
+```
+* The average price per squre foot in the neighborhood selected is $`r round(avg_Price_sf)`.    
+  
+##### Problem 2
+> Run a simple linear regression of SALE_PRICE vs SQUARE_FEET. What is your interpretation of the
+coefficient?
+
+```{r prob2}
+lm_prob2 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET)
+summ(lm_prob2, digits=3)
+```
+* The coefficient of Square Feet is `r round(lm_prob2$coefficients[names(lm_prob2$coefficients) == "SQUARE.FEET"],3)`, meaning that for each additional unit of square foot, the price of the house increases by `r round(lm_prob2$coefficients[names(lm_prob2$coefficients) == "SQUARE.FEET"],3)` dollars.  
+  
+##### Problem 3
+> Run a multiple regression with additional variables for BEDS and BATHS. What do you notice?
+
+```{r prob3}
+lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
+summ(lm_prob3, digits=3)
+```
+  
+##### Problem 4
+> If you are analyzing homes other than single family homes (e.g., condos, townhouses), what do you
+notice about LOT_SIZE?
+
+* Our data only contains one observation that's not single family residential.
+```{r prob4}
+cor(HOUSES$PRICE, HOUSES$LOT.SIZE, use = "complete.obs")
+cor(HOUSES$BEDS, HOUSES$LOT.SIZE, use = "complete.obs")
+cor(HOUSES$BATHS, HOUSES$LOT.SIZE, use = "complete.obs")
+cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
+```
+* From the correlation tests above, we found that lot size is positively correlated with Price, Beds, Baths, and Square Feet.  
+  
+##### Problem 5
+> What fraction of the variation in home prices is explained by your selected variables? How does your
+model change with the addition of other variables?
+
+```{r prob5} 
+summ(Regression1, digits=3)
+plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
+HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2)
+Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+LOT.SIZE2 + YEAR.BUILT + DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
+summ(Regression2, digits=3)
+```
+* 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
+* After adding in quadratic term of lot size (to account for non-linear relationship), days on market (account for perception of desirability), and zip/postal code (to account for location), the new model accounts for 83.5% of the variation in house prices.  
+  
+
+##### Problem 6
+> Try running your model to predict a typical home price. For example, what is the predicted sale price of a
+2-bedroom, 2-bath home with 1,500 square feet? What is the 95% prediction interval?
+
+```{r prob6}
+#assume other variables are at the mean values
+newdata <- data.frame(BEDS = 2, BATHS = 2, CITY = "Los Angeles", SQUARE.FEET = 1500,
+                      LOT.SIZE = mean(HOUSES$LOT.SIZE,na.rm=T), YEAR.BUILT = mean(HOUSES$YEAR.BUILT, na.rm=T))
+predict(Regression1, newdata, interval = "confidence", se.fit=T)
+predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T)
+```
+* Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, and a lot size of `r round(mean(HOUSES$LOT.SIZE,na.rm=T))` sq ft, and built in `r round(mean(HOUSES$YEAR.BUILT, na.rm=T))`, it will be sold at approximately $1,850,435 (95%CI: 1761074, 1939795).   
+  
+##### Problem 7
+> How might you use your model to identify investment opportunities in the current housing market in your
+city?
+
+##### Problem 8
+> Based on your first-hand knowledge of the city, what other variable(s) would you recommend including to
+better predict residential home prices? Pick one of these variables and collect the data for a small
+sample of the homes listed. What is the correlation between your new variable and sales price? Be
+creative!
+
+* some ideas: distance to the airport, proximity to parks/greenlands/Whole Foods/Schools, distance to highways
+
