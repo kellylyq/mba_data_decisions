@@ -10,6 +10,7 @@ library(tidyverse)
 library(ggridges)
 library(jtools)
 library(lmtest)
+library(stargazer)
 ```
 
 ##### Get the data set up
@@ -55,31 +56,31 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
 
 ``` r
 Regression1 = lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET + LOT.SIZE + YEAR.BUILT, data = HOUSES)
-summ(Regression1, digits=3)
+#summ(Regression1, digits=3)
+stargazer(Regression1,single.row = TRUE, type = "text")
 ```
 
-    ## MODEL INFO:
-    ## Observations: 321 (11 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
     ## 
-    ## MODEL FIT:
-    ## F(6,314) = 153.561, p = 0.000
-    ## R² = 0.746
-    ## Adj. R² = 0.741 
-    ## 
-    ## Standard errors: OLS
-    ## -----------------------------------------------------------------
-    ##                               Est.          S.E.   t val.       p
-    ## ------------------- -------------- ------------- -------- -------
-    ## (Intercept)           -5904714.945   1872464.596   -3.153   0.002
-    ## BEDS                    -54163.317     37065.286   -1.461   0.145
-    ## BATHS                    99724.505     35680.193    2.795   0.006
-    ## CITYMar Vista          -143538.178    105102.268   -1.366   0.173
-    ## SQUARE.FEET                465.830        56.252    8.281   0.000
-    ## LOT.SIZE                   103.960        13.629    7.628   0.000
-    ## YEAR.BUILT                3212.676       956.488    3.359   0.001
-    ## -----------------------------------------------------------------
+    ## =====================================================
+    ##                            Dependent variable:       
+    ##                     ---------------------------------
+    ##                                   PRICE              
+    ## -----------------------------------------------------
+    ## BEDS                    -54,163.320 (37,065.290)     
+    ## BATHS                  99,724.510*** (35,680.190)    
+    ## CITYMar Vista          -143,538.200 (105,102.300)    
+    ## SQUARE.FEET                465.830*** (56.252)       
+    ## LOT.SIZE                   103.960*** (13.629)       
+    ## YEAR.BUILT               3,212.676*** (956.488)      
+    ## Constant            -5,904,715.000*** (1,872,465.000)
+    ## -----------------------------------------------------
+    ## Observations                       321               
+    ## R2                                0.746              
+    ## Adjusted R2                       0.741              
+    ## Residual Std. Error      382,049.500 (df = 314)      
+    ## F Statistic             153.561*** (df = 6; 314)     
+    ## =====================================================
+    ## Note:                     *p<0.1; **p<0.05; ***p<0.01
 
 #### Problem 1
 
@@ -104,26 +105,26 @@ print(avg_Price_sf)
 
 ``` r
 lm_prob2 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET)
-summ(lm_prob2, digits=3)
+#summ(lm_prob2, digits=3)
+stargazer(lm_prob2 ,single.row = TRUE, type = "text")
 ```
 
-    ## MODEL INFO:
-    ## Observations: 324 (8 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
     ## 
-    ## MODEL FIT:
-    ## F(1,322) = 732.592, p = 0.000
-    ## R² = 0.695
-    ## Adj. R² = 0.694 
-    ## 
-    ## Standard errors: OLS
-    ## -----------------------------------------------------------
-    ##                           Est.        S.E.   t val.       p
-    ## ----------------- ------------ ----------- -------- -------
-    ## (Intercept)         674095.006   58998.134   11.426   0.000
-    ## SQUARE.FEET            682.486      25.215   27.066   0.000
-    ## -----------------------------------------------------------
+    ## ===============================================
+    ##                         Dependent variable:    
+    ##                     ---------------------------
+    ##                                PRICE           
+    ## -----------------------------------------------
+    ## SQUARE.FEET             682.486*** (25.215)    
+    ## Constant            674,095.000*** (58,998.130)
+    ## -----------------------------------------------
+    ## Observations                    324            
+    ## R2                             0.695           
+    ## Adjusted R2                    0.694           
+    ## Residual Std. Error   415,659.100 (df = 322)   
+    ## F Statistic          732.592*** (df = 1; 322)  
+    ## ===============================================
+    ## Note:               *p<0.1; **p<0.05; ***p<0.01
 
 -   The coefficient of Square Feet is 682.486, meaning that for each
     additional unit of square foot, the price of the house increases by
@@ -136,28 +137,28 @@ summ(lm_prob2, digits=3)
 
 ``` r
 lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
-summ(lm_prob3, digits=3)
+#umm(lm_prob3, digits=3)
+stargazer(lm_prob3 ,single.row = TRUE, type = "text")
 ```
 
-    ## MODEL INFO:
-    ## Observations: 324 (8 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
     ## 
-    ## MODEL FIT:
-    ## F(3,320) = 247.762, p = 0.000
-    ## R² = 0.699
-    ## Adj. R² = 0.696 
-    ## 
-    ## Standard errors: OLS
-    ## -----------------------------------------------------------
-    ##                           Est.        S.E.   t val.       p
-    ## ----------------- ------------ ----------- -------- -------
-    ## (Intercept)         765291.386   89724.679    8.529   0.000
-    ## SQUARE.FEET            653.072      53.398   12.230   0.000
-    ## BEDS                -61205.228   39319.040   -1.557   0.121
-    ## BATHS                66029.661   36472.149    1.810   0.071
-    ## -----------------------------------------------------------
+    ## ===============================================
+    ##                         Dependent variable:    
+    ##                     ---------------------------
+    ##                                PRICE           
+    ## -----------------------------------------------
+    ## SQUARE.FEET             653.072*** (53.398)    
+    ## BEDS                 -61,205.230 (39,319.040)  
+    ## BATHS                66,029.660* (36,472.150)  
+    ## Constant            765,291.400*** (89,724.680)
+    ## -----------------------------------------------
+    ## Observations                    324            
+    ## R2                             0.699           
+    ## Adjusted R2                    0.696           
+    ## Residual Std. Error   413,956.200 (df = 320)   
+    ## F Statistic          247.762*** (df = 3; 320)  
+    ## ===============================================
+    ## Note:               *p<0.1; **p<0.05; ***p<0.01
 
 -   According to the information of regression 3, the coefficient of
     BEDS is -6.1205228^{4}, meaning that for each additional bedroom,
@@ -209,33 +210,7 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 > other variables?
 
 ``` r
-summ(Regression1, digits=3)
-```
-
-    ## MODEL INFO:
-    ## Observations: 321 (11 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
-    ## 
-    ## MODEL FIT:
-    ## F(6,314) = 153.561, p = 0.000
-    ## R² = 0.746
-    ## Adj. R² = 0.741 
-    ## 
-    ## Standard errors: OLS
-    ## -----------------------------------------------------------------
-    ##                               Est.          S.E.   t val.       p
-    ## ------------------- -------------- ------------- -------- -------
-    ## (Intercept)           -5904714.945   1872464.596   -3.153   0.002
-    ## BEDS                    -54163.317     37065.286   -1.461   0.145
-    ## BATHS                    99724.505     35680.193    2.795   0.006
-    ## CITYMar Vista          -143538.178    105102.268   -1.366   0.173
-    ## SQUARE.FEET                465.830        56.252    8.281   0.000
-    ## LOT.SIZE                   103.960        13.629    7.628   0.000
-    ## YEAR.BUILT                3212.676       956.488    3.359   0.001
-    ## -----------------------------------------------------------------
-
-``` r
+#summ(Regression1, digits=3)
 plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
 ```
 
@@ -244,34 +219,34 @@ plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
 ``` r
 HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2)
 Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+LOT.SIZE2 + YEAR.BUILT + DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
-summ(Regression2, digits=3)
+stargazer(Regression1,Regression2 ,single.row = TRUE, type = "text")
 ```
 
-    ## MODEL INFO:
-    ## Observations: 265 (67 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
     ## 
-    ## MODEL FIT:
-    ## F(9,255) = 142.873, p = 0.000
-    ## R² = 0.835
-    ## Adj. R² = 0.829 
-    ## 
-    ## Standard errors: OLS
-    ## --------------------------------------------------------------------------
-    ##                                      Est.            S.E.   t val.       p
-    ## ------------------------ ---------------- --------------- -------- -------
-    ## (Intercept)                -413662026.670   216336112.394   -1.912   0.057
-    ## BEDS                           -31874.281       33906.430   -0.940   0.348
-    ## BATHS                           61175.222       32239.915    1.897   0.059
-    ## CITYMar Vista                  -93289.517       86696.294   -1.076   0.283
-    ## SQUARE.FEET                       514.560          53.139    9.683   0.000
-    ## LOT.SIZE                          149.549          40.664    3.678   0.000
-    ## LOT.SIZE2                          -0.004           0.002   -1.606   0.110
-    ## YEAR.BUILT                       3350.826         877.754    3.817   0.000
-    ## DAYS.ON.MARKET                   -902.892         181.699   -4.969   0.000
-    ## ZIP.OR.POSTAL.CODE               4523.934        2403.289    1.882   0.061
-    ## --------------------------------------------------------------------------
+    ## =========================================================================================
+    ##                                              Dependent variable:                         
+    ##                     ---------------------------------------------------------------------
+    ##                                                     PRICE                                
+    ##                                    (1)                                (2)                
+    ## -----------------------------------------------------------------------------------------
+    ## BEDS                    -54,163.320 (37,065.290)           -31,874.280 (33,906.430)      
+    ## BATHS                  99,724.510*** (35,680.190)          61,175.220* (32,239.920)      
+    ## CITYMar Vista          -143,538.200 (105,102.300)          -93,289.520 (86,696.290)      
+    ## SQUARE.FEET                465.830*** (56.252)                514.560*** (53.139)        
+    ## LOT.SIZE                   103.960*** (13.629)                149.549*** (40.664)        
+    ## LOT.SIZE2                                                       -0.004 (0.002)           
+    ## YEAR.BUILT               3,212.676*** (956.488)             3,350.826*** (877.754)       
+    ## DAYS.ON.MARKET                                               -902.892*** (181.699)       
+    ## ZIP.OR.POSTAL.CODE                                          4,523.934* (2,403.289)       
+    ## Constant            -5,904,715.000*** (1,872,465.000) -413,662,027.000* (216,336,112.000)
+    ## -----------------------------------------------------------------------------------------
+    ## Observations                       321                                265                
+    ## R2                                0.746                              0.835               
+    ## Adjusted R2                       0.741                              0.829               
+    ## Residual Std. Error      382,049.500 (df = 314)             310,012.900 (df = 255)       
+    ## F Statistic             153.561*** (df = 6; 314)           142.873*** (df = 9; 255)      
+    ## =========================================================================================
+    ## Note:                                                         *p<0.1; **p<0.05; ***p<0.01
 
 -   74.6% of the variation in home prices can be explained by our
     selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE ,
@@ -325,7 +300,8 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
     under the line, and check why those houses differ from the price
     predictions of the model. If we cannot find a logical explanation,
     we can assume that these specific outliers are undervalued. We could
-    buy that house and sell it for a profit.  
+    buy that house and sell it for a profit.
+
 -   Idea \#2: You could find information about houses that were sold a
     few years ago and use this information to review their current
     value. After you do that, you can offer to buy the house at a
@@ -360,26 +336,26 @@ cor(HOUSES$PRICE, HOUSES$MARKETDIST, use = "complete.obs")
 
 ``` r
 lm_prob8 <- lm(data = HOUSES, PRICE ~ MARKETDIST)
-summ(lm_prob8, digits=3)
+#summ(lm_prob8, digits=3)
+stargazer(lm_prob8 ,single.row = TRUE, type = "text")
 ```
 
-    ## MODEL INFO:
-    ## Observations: 34 (298 missing obs. deleted)
-    ## Dependent Variable: PRICE
-    ## Type: OLS linear regression 
     ## 
-    ## MODEL FIT:
-    ## F(1,32) = 0.067, p = 0.798
-    ## R² = 0.002
-    ## Adj. R² = -0.029 
-    ## 
-    ## Standard errors: OLS
-    ## -------------------------------------------------------------
-    ##                            Est.         S.E.   t val.       p
-    ## ----------------- ------------- ------------ -------- -------
-    ## (Intercept)         2218827.990   404970.853    5.479   0.000
-    ## MARKETDIST            78161.128   302714.298    0.258   0.798
-    ## -------------------------------------------------------------
+    ## ==================================================
+    ##                          Dependent variable:      
+    ##                     ------------------------------
+    ##                                 PRICE             
+    ## --------------------------------------------------
+    ## MARKETDIST             78,161.130 (302,714.300)   
+    ## Constant            2,218,828.000*** (404,970.900)
+    ## --------------------------------------------------
+    ## Observations                      34              
+    ## R2                              0.002             
+    ## Adjusted R2                     -0.029            
+    ## Residual Std. Error    1,011,598.000 (df = 32)    
+    ## F Statistic               0.067 (df = 1; 32)      
+    ## ==================================================
+    ## Note:                  *p<0.1; **p<0.05; ***p<0.01
 
 Oddly enough, the price of the house is positively correlated with
 distance to the farmer’s market, meaning a house farther away will be

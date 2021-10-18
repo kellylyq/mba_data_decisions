@@ -13,6 +13,7 @@ library(tidyverse)
 library(ggridges)
 library(jtools)
 library(lmtest)
+library(stargazer)
 ```
 
 ##### Get the data set up
@@ -47,7 +48,8 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
 ##### Regression based on variables selected
 ```{r}
 Regression1 = lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET + LOT.SIZE + YEAR.BUILT, data = HOUSES)
-summ(Regression1, digits=3)
+#summ(Regression1, digits=3)
+stargazer(Regression1,single.row = TRUE, type = "text")
 ```
   
 #### Problem 1
@@ -66,7 +68,8 @@ coefficient?
 
 ```{r prob2}
 lm_prob2 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET)
-summ(lm_prob2, digits=3)
+#summ(lm_prob2, digits=3)
+stargazer(lm_prob2 ,single.row = TRUE, type = "text")
 ```
 * The coefficient of Square Feet is `r round(lm_prob2$coefficients[names(lm_prob2$coefficients) == "SQUARE.FEET"],3)`, meaning that for each additional unit of square foot, the price of the house increases by `r round(lm_prob2$coefficients[names(lm_prob2$coefficients) == "SQUARE.FEET"],3)` dollars.  
   
@@ -75,7 +78,8 @@ summ(lm_prob2, digits=3)
 
 ```{r prob3}
 lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
-summ(lm_prob3, digits=3)
+#umm(lm_prob3, digits=3)
+stargazer(lm_prob3 ,single.row = TRUE, type = "text")
 ```
 
 * According to the information of regression 3, the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)` dollars and the coefficient of BATHS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)`, meaning that for each additional bathroom, the price of the house increases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)` dollars. Also both independent variables, BEDS and BATHS, are not statistically significant. 
@@ -99,11 +103,11 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 model change with the addition of other variables?
 
 ```{r prob5} 
-summ(Regression1, digits=3)
+#summ(Regression1, digits=3)
 plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
 HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2)
 Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+LOT.SIZE2 + YEAR.BUILT + DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
-summ(Regression2, digits=3)
+stargazer(Regression1,Regression2 ,single.row = TRUE, type = "text")
 ```
 * 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
 * After adding in quadratic term of lot size (to account for non-linear relationship), days on market (account for perception of desirability), and zip/postal code (to account for location), the new model accounts for 83.5% of the variation in house prices.  
@@ -125,6 +129,7 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
 city?
 
 * Idea #1: If we plot the linear equation that comes from the linear regression, we can focus our attention on those outliers, which are under the line, and check why those houses differ from the price predictions of the model. If we cannot find a logical explanation, we can assume that these specific outliers are undervalued. We could buy that house and sell it for a profit.     
+
 * Idea #2: You could find information about houses that were sold a few years ago and use this information to review their current value. After you do that, you can offer to buy the house at a cheaper price than the one that the regression suggests, and then you could sell it for a profit. 
  
 #### Problem 8
@@ -138,7 +143,8 @@ Mar Vista is a mostly suburban neighborhood to the west of the 405 and east of t
 ```{r prob8}
 cor(HOUSES$PRICE, HOUSES$MARKETDIST, use = "complete.obs")
 lm_prob8 <- lm(data = HOUSES, PRICE ~ MARKETDIST)
-summ(lm_prob8, digits=3)
+#summ(lm_prob8, digits=3)
+stargazer(lm_prob8 ,single.row = TRUE, type = "text")
 ```
 
 Oddly enough, the price of the house is positively correlated with distance to the farmer's market, meaning a house farther away will be more expensive. It may be running into other confounding location variables like proximity to the Mar Vista Recreation Center or elevation, or it may indicate a preference for distance from the more active areas. We have a high p-value though, so we cannot confidently say that the distance to the farmer's market affects the sale price. 
