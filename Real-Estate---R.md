@@ -15,7 +15,7 @@ library(lmtest)
 ##### Get the data set up
 
 ``` r
-HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/redfin_2021-10-12-12-54-17.csv", 
+HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/redfinMarVista.csv", 
                    stringsAsFactors = T)
 ```
 
@@ -340,5 +340,51 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
 > sample of the homes listed. What is the correlation between your new
 > variable and sales price? Be creative!
 
--   some ideas: distance to the airport, proximity to
-    parks/greenlands/Whole Foods/Schools, distance to highways
+Mar Vista is a mostly suburban neighborhood to the west of the 405 and
+east of the 10. It has some hills, so we may see some variation in price
+based on elevation. It’s also close to some major landmarks, so we
+assume that well see some variation from proximity to things like the
+beach, airport, and freeways. Because it’s very residential, we also
+expect to see some variation based on proximity to parks and schools.
+There’s also a cute little downtown strip on Venice and Centinela with
+shops, restaurants, and a fantastic farmer’s market on the weekends.
+We’ll examine the relationship between price and proximity to this area
+by measuring the distance from the house to the farmers market via
+Google Maps for a selection of 34 houses.
+
+``` r
+cor(HOUSES$PRICE, HOUSES$MARKETDIST, use = "complete.obs")
+```
+
+    ## [1] 0.04559644
+
+``` r
+lm_prob8 <- lm(data = HOUSES, PRICE ~ MARKETDIST)
+summ(lm_prob8, digits=3)
+```
+
+    ## MODEL INFO:
+    ## Observations: 34 (298 missing obs. deleted)
+    ## Dependent Variable: PRICE
+    ## Type: OLS linear regression 
+    ## 
+    ## MODEL FIT:
+    ## F(1,32) = 0.067, p = 0.798
+    ## R² = 0.002
+    ## Adj. R² = -0.029 
+    ## 
+    ## Standard errors: OLS
+    ## -------------------------------------------------------------
+    ##                            Est.         S.E.   t val.       p
+    ## ----------------- ------------- ------------ -------- -------
+    ## (Intercept)         2218827.990   404970.853    5.479   0.000
+    ## MARKETDIST            78161.128   302714.298    0.258   0.798
+    ## -------------------------------------------------------------
+
+Oddly enough, the price of the house is positively correlated with
+distance to the farmer’s market, meaning a house farther away will be
+more expensive. It may be running into other confounding location
+variables like proximity to the Mar Vista Recreation Center or
+elevation, or it may indicate a preference for distance from the more
+active areas. We have a high p-value though, so we cannot confidently
+say that the distance to the farmer’s market affects the sale price.
