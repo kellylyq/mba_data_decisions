@@ -1,12 +1,12 @@
 ---
 title: "RedFin Housing Prices for Mar vista"
-Date: "10/13/2021"
+Date: "10/18/2021"
 author: "Section: B  Learning Team: 8  Students: Alex MarMureanu, Caldwell Clarke, Lyle Seebeck, Kelly Li, Joaquin Trucco"
 
-output: github_document
+output: html_document
 ---
-
-
+  
+  
 ##### Mount up
 ```{r, message = FALSE}
 library(tidyverse)
@@ -22,7 +22,7 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
 ```
 
 ##### Notes on data selection
-* We're looking at single family homes in the Mar Vista area of LA that have been sold in the last 12 months. 
+* We are looking at single family homes in the Mar Vista area of LA that have been sold in the last 12 months. 
 * We have included:
   + CITY - we're curious if an LA versus MV address makes a difference
   + PRICE - total paid in last purchase
@@ -51,8 +51,7 @@ summ(Regression1, digits=3)
 ```
   
 ##### Problem 1
-> For each house, calculate the price per square foot. What is the average price per square foot in your
-selected city?
+> For each house, calculate the price per square foot. What is the average price per square foot in your selected city?
 
 ```{r prob1}
 HOUSES<- HOUSES %>% mutate(Price_sf = PRICE/SQUARE.FEET)
@@ -78,12 +77,15 @@ summ(lm_prob2, digits=3)
 lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
 summ(lm_prob3, digits=3)
 ```
+
+* According to the information of regression 3, the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)` dollars and the coefficient of BATHS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)`, meaning that for each additional bathroom, the price of the house increases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)` dollars. Also both independent variables, BEDS and BATHS, are not statistically significant. 
   
 ##### Problem 4
 > If you are analyzing homes other than single family homes (e.g., condos, townhouses), what do you
 notice about LOT_SIZE?
 
 * Our data only contains one observation that's not single family residential.
+
 ```{r prob4}
 cor(HOUSES$PRICE, HOUSES$LOT.SIZE, use = "complete.obs")
 cor(HOUSES$BEDS, HOUSES$LOT.SIZE, use = "complete.obs")
@@ -91,7 +93,7 @@ cor(HOUSES$BATHS, HOUSES$LOT.SIZE, use = "complete.obs")
 cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 ```
 * From the correlation tests above, we found that lot size is positively correlated with Price, Beds, Baths, and Square Feet.  
-  
+
 ##### Problem 5
 > What fraction of the variation in home prices is explained by your selected variables? How does your
 model change with the addition of other variables?
@@ -105,11 +107,9 @@ summ(Regression2, digits=3)
 ```
 * 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
 * After adding in quadratic term of lot size (to account for non-linear relationship), days on market (account for perception of desirability), and zip/postal code (to account for location), the new model accounts for 83.5% of the variation in house prices.  
-  
 
 ##### Problem 6
-> Try running your model to predict a typical home price. For example, what is the predicted sale price of a
-2-bedroom, 2-bath home with 1,500 square feet? What is the 95% prediction interval?
+> Try running your model to predict a typical home price. For example, what is the predicted sale price of a 2-bedroom, 2-bath home with 1,500 square feet? What is the 95% prediction interval?
 
 ```{r prob6}
 #assume other variables are at the mean values
@@ -119,11 +119,14 @@ predict(Regression1, newdata, interval = "confidence", se.fit=T)
 predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T)
 ```
 * Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, and a lot size of `r round(mean(HOUSES$LOT.SIZE,na.rm=T))` sq ft, and built in `r round(mean(HOUSES$YEAR.BUILT, na.rm=T))`, it will be sold at approximately $1,850,435 (95%CI: 1761074, 1939795).   
-  
+
 ##### Problem 7
 > How might you use your model to identify investment opportunities in the current housing market in your
 city?
 
+* Idea #1: If we plot the linear equation that comes from the linear regression, we can focus our attention on those outliers, which are under the line, and check why those houses differ from the price predictions of the model. If we cannot find a logical explanation, we can assume that these specific outliers are undervalued. We could buy that house and sell it for a profit.     
+* Idea #2: You could find information about houses that were sold a few years ago and use this information to review their current value. After you do that, you can offer to buy the house at a cheaper price than the one that the regression suggests, and then you could sell it for a profit. 
+ 
 ##### Problem 8
 > Based on your first-hand knowledge of the city, what other variable(s) would you recommend including to
 better predict residential home prices? Pick one of these variables and collect the data for a small
@@ -131,4 +134,3 @@ sample of the homes listed. What is the correlation between your new variable an
 creative!
 
 * some ideas: distance to the airport, proximity to parks/greenlands/Whole Foods/Schools, distance to highways
-
