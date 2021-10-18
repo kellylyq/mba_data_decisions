@@ -21,7 +21,7 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
 
 ##### Notes on data selection
 
--   We’re looking at single family homes in the Mar Vista area of LA
+-   We are looking at single family homes in the Mar Vista area of LA
     that have been sold in the last 12 months.
 -   We have included:
     -   CITY - we’re curious if an LA versus MV address makes a
@@ -158,6 +158,14 @@ summ(lm_prob3, digits=3)
     ## BEDS                -61205.228   39319.040   -1.557   0.121
     ## BATHS                66029.661   36472.149    1.810   0.071
     ## -----------------------------------------------------------
+
+-   According to the information of regression 3, the coefficient of
+    BEDS is -6.1205228^{4}, meaning that for each additional bedroom,
+    the price of the house decreases by -6.1205228^{4} dollars and the
+    coefficient of BATHS is 6.6029661^{4}, meaning that for each
+    additional bathroom, the price of the house increases by
+    6.6029661^{4} dollars. Also both independent variables, BEDS and
+    BATHS, are not statistically significant.
 
 ##### Problem 4
 
@@ -311,6 +319,18 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
 
 > How might you use your model to identify investment opportunities in
 > the current housing market in your city?
+
+-   Idea \#1: If we plot the linear equation that comes from the linear
+    regression, we can focus our attention on those outliers, which are
+    under the line, and check why those houses differ from the price
+    predictions of the model. If we cannot find a logical explanation,
+    we can assume that these specific outliers are undervalued. We could
+    buy that house and sell it for a profit.  
+-   Idea \#2: You could find information about houses that were sold a
+    few years ago and use this information to review their current
+    value. After you do that, you can offer to buy the house at a
+    cheaper price than the one that the regression suggests, and then
+    you could sell it for a profit.
 
 ##### Problem 8
 

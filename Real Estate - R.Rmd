@@ -3,7 +3,7 @@ title: "RedFin Housing Prices for Mar vista"
 Date: "10/18/2021"
 author: "Section: B  Learning Team: 8  Students: Alex MarMureanu, Caldwell Clarke, Lyle Seebeck, Kelly Li, Joaquin Trucco"
 
-output: html_document
+output: github_document
 ---
   
   
