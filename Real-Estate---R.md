@@ -81,7 +81,7 @@ summ(Regression1, digits=3)
     ## YEAR.BUILT                3212.676       956.488    3.359   0.001
     ## -----------------------------------------------------------------
 
-##### Problem 1
+#### Problem 1
 
 > For each house, calculate the price per square foot. What is the
 > average price per square foot in your selected city?
@@ -97,7 +97,7 @@ print(avg_Price_sf)
 -   The average price per squre foot in the neighborhood selected is
     $1056.
 
-##### Problem 2
+#### Problem 2
 
 > Run a simple linear regression of SALE\_PRICE vs SQUARE\_FEET. What is
 > your interpretation of the coefficient?
@@ -129,7 +129,7 @@ summ(lm_prob2, digits=3)
     additional unit of square foot, the price of the house increases by
     682.486 dollars.
 
-##### Problem 3
+#### Problem 3
 
 > Run a multiple regression with additional variables for BEDS and
 > BATHS. What do you notice?
@@ -167,7 +167,7 @@ summ(lm_prob3, digits=3)
     6.6029661^{4} dollars. Also both independent variables, BEDS and
     BATHS, are not statistically significant.
 
-##### Problem 4
+#### Problem 4
 
 > If you are analyzing homes other than single family homes (e.g.,
 > condos, townhouses), what do you notice about LOT\_SIZE?
@@ -202,7 +202,7 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 -   From the correlation tests above, we found that lot size is
     positively correlated with Price, Beds, Baths, and Square Feet.
 
-##### Problem 5
+#### Problem 5
 
 > What fraction of the variation in home prices is explained by your
 > selected variables? How does your model change with the addition of
@@ -281,7 +281,7 @@ summ(Regression2, digits=3)
     desirability), and zip/postal code (to account for location), the
     new model accounts for 83.5% of the variation in house prices.
 
-##### Problem 6
+#### Problem 6
 
 > Try running your model to predict a typical home price. For example,
 > what is the predicted sale price of a 2-bedroom, 2-bath home with
@@ -315,7 +315,7 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
     a lot size of 6320 sq ft, and built in 1964, it will be sold at
     approximately $1,850,435 (95%CI: 1761074, 1939795).
 
-##### Problem 7
+#### Problem 7
 
 > How might you use your model to identify investment opportunities in
 > the current housing market in your city?
@@ -332,7 +332,7 @@ predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T
     cheaper price than the one that the regression suggests, and then
     you could sell it for a profit.
 
-##### Problem 8
+#### Problem 8
 
 > Based on your first-hand knowledge of the city, what other variable(s)
 > would you recommend including to better predict residential home
