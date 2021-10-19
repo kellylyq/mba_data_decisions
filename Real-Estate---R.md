@@ -162,13 +162,22 @@ stargazer(lm_prob3 ,single.row = TRUE, type = "text")
     ## ===============================================
     ## Note:               *p<0.1; **p<0.05; ***p<0.01
 
--   According to the information of regression 3, the coefficient of
-    BEDS is -61205.2, meaning that for each additional bedroom, the
-    price of the house decreases by -61205.2 dollars and the coefficient
-    of BATHS is 66029.7, meaning that for each additional bathroom, the
-    price of the house increases by 66029.7 dollars. Also both
-    independent variables, BEDS and BATHS, are not statistically
-    significant.
+-   When we control for beds and baths, we do not see the coefficient
+    for square feet change by very much (682 to 653). Furthermore,
+    neither the coefficient for beds or the coefficient for baths are
+    statistically significant at a 95% level (with beds being closer at
+    93%). From this, we would infer that the square footage is itself a
+    reliable predictor of price regardless of variations in the number
+    of beds and baths.
+
+-   Furthermore, we notice that the coefficient of BEDS is -61205.2,
+    meaning that for each additional bedroom, the price of the house
+    decreases by -61205.2 dollars. That does not make much intuitive
+    sense, until we consider that the coefficient of baths is nearly
+    equivalent at 66029.7. Along with the above observation, we
+    interpret this to mean the beds & baths (which are generally
+    correlated) are canceling each other out, and that square footage is
+    the more reliable determinant of cost.
 
 #### Problem 4
 
@@ -252,6 +261,20 @@ stargazer(linear_lotsize , quadratic_lotsize, single.row = TRUE, type = "text", 
     (p&gt;0.05) at 95% confidence level. Therefore, we could confidently
     incorporate lot size to our regression in its linear term only.
 
+-   However, from a qualitative standpoint, we did speculate on how lot
+    size might behave differently in multi-family homes. Namely, we
+    might expect that such homes would not see as strong of a
+    correlation between lot sizes and price.
+
+-   Our reasoning for this is to compare the extremes of a massive condo
+    complex, a midsize townhouse apartment complex, and a single-family
+    mansion. The single-family mansion would logically see a close
+    correlation between lot size and price. The townhouse might as well,
+    as assuming there is one family per floor, the square footage of
+    each floor wouldn’t be too much different than the lot size. On the
+    other hand, in condo complexes, the lot size would be massive and
+    the square footage small, leading to relatively smaller prices.
+
 #### Problem 5
 
 > What fraction of the variation in home prices is explained by your
@@ -292,62 +315,98 @@ HOUSES$YEAR.BUILT_cat <- factor(HOUSES$YEAR.BUILT_cat, levels =c( "Less than 5 y
                                                                  "50 to 70 years","More than 70 years") ) #arrange levels
 Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat+ DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
 Regression3<-lm(PRICE ~ SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat + DAYS.ON.MARKET, data = HOUSES)
-stargazer(Regression1,Regression2 , Regression3,single.row = TRUE, type = "text", title="Comparison of Regression 1, 2, and 3")
+stargazer(Regression1,Regression2 , Regression3,align = T,type = "text", title="Comparison of Regression 1, 2, and 3")
 ```
 
     ## 
     ## Comparison of Regression 1, 2, and 3
-    ## ============================================================================================================================
-    ##                                                                      Dependent variable:                                    
-    ##                                  -------------------------------------------------------------------------------------------
-    ##                                                                             PRICE                                           
-    ##                                                 (1)                            (2)                          (3)             
-    ## ----------------------------------------------------------------------------------------------------------------------------
-    ## BEDS                                 -54,163.320 (37,065.290)        -21,654.040 (33,697.980)                               
-    ## BATHS                               99,724.510*** (35,680.190)       49,759.390 (32,589.970)                                
-    ## CITYMar Vista                       -143,538.200 (105,102.300)       -57,418.400 (86,416.220)                               
-    ## SQUARE.FEET                             465.830*** (56.252)            544.977*** (52.528)          582.847*** (31.415)     
-    ## LOT.SIZE                                103.960*** (13.629)             88.301*** (12.347)           85.269*** (12.163)     
-    ## YEAR.BUILT                            3,212.676*** (956.488)                                                                
-    ## YEAR.BUILT_cat5 to 10 years                                         -32,453.420 (126,104.300)     8,381.814 (124,486.400)   
-    ## YEAR.BUILT_cat10 to 50 years                                       -347,244.500*** (86,151.550) -367,236.000*** (85,011.170)
-    ## YEAR.BUILT_cat50 to 70 years                                       -240,201.200*** (75,165.620) -257,154.700*** (74,450.150)
-    ## YEAR.BUILT_catMore than 70 years                                   -272,861.400*** (68,942.590) -302,751.000*** (67,094.210)
-    ## DAYS.ON.MARKET                                                        -869.911*** (178.820)        -875.945*** (177.591)    
-    ## ZIP.OR.POSTAL.CODE90066                                             141,696.300* (75,934.510)                               
-    ## Constant                         -5,904,715.000*** (1,872,465.000) 584,424.600*** (136,121.700) 735,813.400*** (100,471.800)
-    ## ----------------------------------------------------------------------------------------------------------------------------
-    ## Observations                                    321                            265                          265             
-    ## R2                                             0.746                          0.840                        0.836            
-    ## Adjusted R2                                    0.741                          0.833                        0.832            
-    ## Residual Std. Error                   382,049.500 (df = 314)          306,079.800 (df = 253)       307,055.600 (df = 257)   
-    ## F Statistic                          153.561*** (df = 6; 314)       120.701*** (df = 11; 253)     187.668*** (df = 7; 257)  
-    ## ============================================================================================================================
-    ## Note:                                                                                            *p<0.1; **p<0.05; ***p<0.01
+    ## ============================================================================================================
+    ##                                                              Dependent variable:                            
+    ##                                  ---------------------------------------------------------------------------
+    ##                                                                     PRICE                                   
+    ##                                            (1)                       (2)                      (3)           
+    ## ------------------------------------------------------------------------------------------------------------
+    ## BEDS                                   -54,163.320               -21,654.040                                
+    ##                                        (37,065.290)             (33,697.980)                                
+    ##                                                                                                             
+    ## BATHS                                 99,724.510***              49,759.390                                 
+    ##                                        (35,680.190)             (32,589.970)                                
+    ##                                                                                                             
+    ## CITYMar Vista                          -143,538.200              -57,418.400                                
+    ##                                       (105,102.300)             (86,416.220)                                
+    ##                                                                                                             
+    ## SQUARE.FEET                             465.830***               544.977***                582.847***       
+    ##                                          (56.252)                 (52.528)                  (31.415)        
+    ##                                                                                                             
+    ## LOT.SIZE                                103.960***                88.301***                85.269***        
+    ##                                          (13.629)                 (12.347)                  (12.163)        
+    ##                                                                                                             
+    ## YEAR.BUILT                             3,212.676***                                                         
+    ##                                         (956.488)                                                           
+    ##                                                                                                             
+    ## YEAR.BUILT_cat5 to 10 years                                      -32,453.420               8,381.814        
+    ##                                                                 (126,104.300)            (124,486.400)      
+    ##                                                                                                             
+    ## YEAR.BUILT_cat10 to 50 years                                   -347,244.500***          -367,236.000***     
+    ##                                                                 (86,151.550)              (85,011.170)      
+    ##                                                                                                             
+    ## YEAR.BUILT_cat50 to 70 years                                   -240,201.200***          -257,154.700***     
+    ##                                                                 (75,165.620)              (74,450.150)      
+    ##                                                                                                             
+    ## YEAR.BUILT_catMore than 70 years                               -272,861.400***          -302,751.000***     
+    ##                                                                 (68,942.590)              (67,094.210)      
+    ##                                                                                                             
+    ## DAYS.ON.MARKET                                                   -869.911***              -875.945***       
+    ##                                                                   (178.820)                (177.591)        
+    ##                                                                                                             
+    ## ZIP.OR.POSTAL.CODE90066                                         141,696.300*                                
+    ##                                                                 (75,934.510)                                
+    ##                                                                                                             
+    ## Constant                            -5,904,715.000***          584,424.600***            735,813.400***     
+    ##                                      (1,872,465.000)            (136,121.700)            (100,471.800)      
+    ##                                                                                                             
+    ## ------------------------------------------------------------------------------------------------------------
+    ## Observations                               321                       265                      265           
+    ## R2                                        0.746                     0.840                    0.836          
+    ## Adjusted R2                               0.741                     0.833                    0.832          
+    ## Residual Std. Error               382,049.500 (df = 314)   306,079.800 (df = 253)    307,055.600 (df = 257) 
+    ## F Statistic                      153.561*** (df = 6; 314) 120.701*** (df = 11; 253) 187.668*** (df = 7; 257)
+    ## ============================================================================================================
+    ## Note:                                                                            *p<0.1; **p<0.05; ***p<0.01
 
--   Based on Regression(1), 74.6% of the variation in home prices can be
-    explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET,
-    LOT.SIZE , YEAR.BUILT).
+-   Most of the variation is explained by square feet, for when run as
+    the only regression variable its R^2 is 70%.
+-   Then when we add bed & bath, the R^2 goes up by less than 1%.
+-   Adding the rest of the variables in Regression(1) (i.e. CITY,
+    LOT.SIZE, YEAR.BUILT), we get up to 74.6%.
 -   For Regression (2), we added in Days on Market to account for
     perception of desirability, and zip/postal code to account for
     location. We also converted Years Built from continuous variable to
     categorical by grouping them into &lt;5 years, 5-10 years, 10-50
-    years, 50-70 years, and &gt;70 years. The second model accounts for
-    84% of the variation in house prices. After accounting for the
-    additional variables, we found that Beds, Baths, and City are not
-    associated with House Price at 95% significance level. Compared to
-    Houses built within 5 years,those built within 10 years do not have
-    a statistically different price. However, those built more than 10
+    years, 50-70 years, and &gt;70 years. This model accounts for 84% of
+    the variation in house prices. After accounting for the additional
+    variables, we found that Beds, Baths, and City are not associated
+    with House Price at 95% significance level. Compared to Houses built
+    within 5 years,those built within 10 years do not have a
+    statistically different price. However, those built more than 10
     years have lower prices (with p&lt;0.05). Moreover, we found that
     the longer the days on market, the lower the prices that houses were
     sold for (p&lt;0.05). ZIP codes, however, were not significantly
     associated with house prices, potentially because of the lack of
     geographic variation in the data.  
+-   Thinking further about the zip code result, location is often cited
+    as one of the most important components of real estate prices. If we
+    were to compare more diverse geographical regions, for instance
+    Manhattan versus rural Kansas, we might expect the R^2 for zip codes
+    to be relatively higher (and perhaps the R^2 for square footage to
+    be relatively lower).
 -   Considering the outputs from Regression (1) and (2), we decided to
     run a final model (Regression 3) by dropping non-significant factors
     and keeping Square Feet, Lot Size, Year Built (categorical), and
-    Days on Market. The resulting model has an R-squared of 0.836, which
-    is 9% up from the initial regression (0.746).
+    Days on Market. In general, we felt these variables to be most
+    descriptive when considering a combined quantitative and qualitative
+    perspective. The resulting model has an R-squared of 0.836, which is
+    9% up from the initial regression (0.746).
 
 #### Problem 6
 

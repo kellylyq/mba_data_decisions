@@ -85,7 +85,9 @@ lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
 stargazer(lm_prob3 ,single.row = TRUE, type = "text")
 ```
 
-* According to the information of regression 3, the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)` dollars and the coefficient of BATHS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],1)`, meaning that for each additional bathroom, the price of the house increases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],1)` dollars. Also both independent variables, BEDS and BATHS, are not statistically significant. 
+* When we control for beds and baths, we do not see the coefficient for square feet change by very much (682 to 653). Furthermore, neither the coefficient for beds or the coefficient for baths are statistically significant at a 95% level (with beds being closer at 93%). From this, we would infer that the square footage is itself a reliable predictor of price regardless of variations in the number of beds and baths.
+
+* Furthermore, we notice that the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)` dollars. That does not make much intuitive sense, until we consider that the coefficient of baths is nearly equivalent at `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],1)`. Along with the above observation, we interpret this to mean the beds & baths (which are generally correlated) are canceling each other out, and that square footage is the more reliable determinant of cost. 
   
 #### Problem 4
 > If you are analyzing homes other than single family homes (e.g., condos, townhouses), what do you notice about LOT_SIZE?
@@ -113,6 +115,10 @@ quadratic_lotsize <- lm(data = HOUSES, PRICE~LOT.SIZE+LOT.SIZE2)
 stargazer(linear_lotsize , quadratic_lotsize, single.row = TRUE, type = "text", title="Comparison of the Addition of Quadratic Term on Linear Regression Outputs" )
 ```
 * Based on the regression outputs above, we could see that the quadratic term  of lot size has very little effect (coefficient = -0.004) on the house price and is not statistically significant (p>0.05) at 95% confidence level. Therefore, we could confidently incorporate lot size to our regression in its linear term only.
+
+* However, from a qualitative standpoint, we did speculate on how lot size might behave differently in multi-family homes. Namely, we might expect that such homes would not see as strong of a correlation between lot sizes and price. 
+
+* Our reasoning for this is to compare the extremes of a massive condo complex, a midsize townhouse apartment complex, and a single-family mansion. The single-family mansion would logically see a close correlation between lot size and price. The townhouse might as well, as assuming there is one family per floor, the square footage of each floor wouldn't be too much different than the lot size. On the other hand, in condo complexes, the lot size would be massive and the square footage small, leading to relatively smaller prices. 
 
 #### Problem 5
 > What fraction of the variation in home prices is explained by your selected variables? How does your model change with the addition of other variables?
@@ -142,12 +148,15 @@ HOUSES$YEAR.BUILT_cat <- factor(HOUSES$YEAR.BUILT_cat, levels =c( "Less than 5 y
                                                                  "50 to 70 years","More than 70 years") ) #arrange levels
 Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat+ DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
 Regression3<-lm(PRICE ~ SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat + DAYS.ON.MARKET, data = HOUSES)
-stargazer(Regression1,Regression2 , Regression3,single.row = TRUE, type = "text", title="Comparison of Regression 1, 2, and 3")
+stargazer(Regression1,Regression2 , Regression3,align = T,type = "text", title="Comparison of Regression 1, 2, and 3")
 ```
 
-* Based on Regression(1), 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
-* For Regression (2), we added in Days on Market to account for perception of desirability, and zip/postal code to account for location. We also converted Years Built from continuous variable to categorical by grouping them into <5 years, 5-10 years, 10-50 years, 50-70 years, and >70 years. The second model accounts for 84% of the variation in house prices. After accounting for the additional variables, we found that Beds, Baths, and City are not associated with House Price at 95% significance level. Compared to Houses built within 5 years,those built within 10 years do not have a statistically different price. However, those built more than 10 years have lower prices (with p<0.05). Moreover, we found that the longer the days on market, the lower the prices that houses were sold for (p<0.05). ZIP codes, however, were not significantly associated with house prices, potentially because of the lack of geographic variation in the data.  
-* Considering the outputs from Regression (1) and (2), we decided to run a final model (Regression 3) by dropping non-significant factors and keeping Square Feet, Lot Size, Year Built (categorical), and Days on Market. The resulting model has an R-squared of 0.836, which is 9% up from the initial regression (0.746).
+* Most of the variation is explained by square feet, for when run as the only regression variable its R^2 is 70%. 
+* Then when we add bed & bath, the R^2 goes up by less than 1%. 
+* Adding the rest of the variables in Regression(1) (i.e. CITY, LOT.SIZE, YEAR.BUILT), we get up to 74.6%.
+* For Regression (2), we added in Days on Market to account for perception of desirability, and zip/postal code to account for location. We also converted Years Built from continuous variable to categorical by grouping them into <5 years, 5-10 years, 10-50 years, 50-70 years, and >70 years. This model accounts for 84% of the variation in house prices. After accounting for the additional variables, we found that Beds, Baths, and City are not associated with House Price at 95% significance level. Compared to Houses built within 5 years,those built within 10 years do not have a statistically different price. However, those built more than 10 years have lower prices (with p<0.05). Moreover, we found that the longer the days on market, the lower the prices that houses were sold for (p<0.05). ZIP codes, however, were not significantly associated with house prices, potentially because of the lack of geographic variation in the data.  
+* Thinking further about the zip code result, location is often cited as one of the most important components of real estate prices. If we were to compare more diverse geographical regions, for instance Manhattan versus rural Kansas, we might expect the R^2 for zip codes to be relatively higher (and perhaps the R^2 for square footage to be relatively lower). 
+* Considering the outputs from Regression (1) and (2), we decided to run a final model (Regression 3) by dropping non-significant factors and keeping Square Feet, Lot Size, Year Built (categorical), and Days on Market. In general, we felt these variables to be most descriptive when considering a combined quantitative and qualitative perspective. The resulting model has an R-squared of 0.836, which is 9% up from the initial regression (0.746).
 
 #### Problem 6
 > Try running your model to predict a typical home price. For example, what is the predicted sale price of a 2-bedroom, 2-bath home with 1,500 square feet? What is the 95% prediction interval?
