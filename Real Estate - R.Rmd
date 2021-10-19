@@ -1,10 +1,13 @@
 ---
-title: "RedFin Housing Prices for Mar vista"
+title: "RedFin Housing Prices for Mar Vista"
 Date: "10/18/2021"
 author: "Section: B  Learning Team: 8  Students: Alex MarMureanu, Caldwell Clarke, Lyle Seebeck, Kelly Li, Joaquin Trucco"
 
 output: github_document
 ---
+```{r include=FALSE}
+knitr::opts_chunk$set(options(scipen =100 ))
+```
   
   
 ##### Mount up
@@ -14,6 +17,7 @@ library(ggridges)
 library(jtools)
 library(lmtest)
 library(stargazer)
+library(ggplot2)
 ```
 
 ##### Get the data set up
@@ -22,7 +26,7 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
                    stringsAsFactors = T)
 ```
 
-##### Notes on data selection
+##### Notes on preliminary data selection
 * We are looking at single family homes in the Mar Vista area of LA that have been sold in the last 12 months. 
 * We have included:
   + CITY - we're curious if an LA versus MV address makes a difference
@@ -45,11 +49,11 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
   + X..SQUARE.FEET - $/Square Feet
   + The remaining fields are internal and not useful
 
-##### Regression based on variables selected
+##### Preliminary regression based on variables selected
 ```{r}
 Regression1 = lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET + LOT.SIZE + YEAR.BUILT, data = HOUSES)
 #summ(Regression1, digits=3)
-stargazer(Regression1,single.row = TRUE, type = "text")
+stargazer(Regression1,single.row = TRUE, type = "text", title = "Regression 1")
 ```
   
 #### Problem 1
@@ -63,8 +67,7 @@ print(avg_Price_sf)
 * The average price per squre foot in the neighborhood selected is $`r round(avg_Price_sf)`.    
   
 #### Problem 2
-> Run a simple linear regression of SALE_PRICE vs SQUARE_FEET. What is your interpretation of the
-coefficient?
+> Run a simple linear regression of SALE_PRICE vs SQUARE_FEET. What is your interpretation of the coefficient?
 
 ```{r prob2}
 lm_prob2 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET)
@@ -82,11 +85,10 @@ lm_prob3 <- lm(data = HOUSES, PRICE ~ SQUARE.FEET + BEDS + BATHS)
 stargazer(lm_prob3 ,single.row = TRUE, type = "text")
 ```
 
-* According to the information of regression 3, the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],3)` dollars and the coefficient of BATHS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)`, meaning that for each additional bathroom, the price of the house increases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],3)` dollars. Also both independent variables, BEDS and BATHS, are not statistically significant. 
+* According to the information of regression 3, the coefficient of BEDS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)`, meaning that for each additional bedroom, the price of the house decreases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BEDS"],1)` dollars and the coefficient of BATHS is `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],1)`, meaning that for each additional bathroom, the price of the house increases by `r round(lm_prob3$coefficients[names(lm_prob3$coefficients) == "BATHS"],1)` dollars. Also both independent variables, BEDS and BATHS, are not statistically significant. 
   
 #### Problem 4
-> If you are analyzing homes other than single family homes (e.g., condos, townhouses), what do you
-notice about LOT_SIZE?
+> If you are analyzing homes other than single family homes (e.g., condos, townhouses), what do you notice about LOT_SIZE?
 
 * Our data only contains one observation that's not single family residential.
 
@@ -98,45 +100,76 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 ```
 * From the correlation tests above, we found that lot size is positively correlated with Price, Beds, Baths, and Square Feet.  
 
+```{r message=FALSE}
+ggplot(data = HOUSES, aes(x=LOT.SIZE, y=PRICE) ) + geom_point()+ggtitle("Scatter Plot of House Prices vs Lot Size in Mar Vista")
+```
+
+* Based on the scatter plot between price and lot size, it is not clear whether the two variables are linearly correlated. Therefore, we added the quadratic term of the lot size variable and compared its regression coefficient with the regression using first power only.
+
+```{r}
+HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2) # add quadratic term for lot size
+linear_lotsize <- lm(data = HOUSES, PRICE~LOT.SIZE)
+quadratic_lotsize <- lm(data = HOUSES, PRICE~LOT.SIZE+LOT.SIZE2)
+stargazer(linear_lotsize , quadratic_lotsize, single.row = TRUE, type = "text", title="Comparison of the Addition of Quadratic Term on Linear Regression Outputs" )
+```
+* Based on the regression outputs above, we could see that the quadratic term  of lot size has very little effect (coefficient = -0.004) on the house price and is not statistically significant (p>0.05) at 95% confidence level. Therefore, we could confidently incorporate lot size to our regression in its linear term only.
+
 #### Problem 5
-> What fraction of the variation in home prices is explained by your selected variables? How does your
-model change with the addition of other variables?
+> What fraction of the variation in home prices is explained by your selected variables? How does your model change with the addition of other variables?
 
 ```{r prob5} 
 #summ(Regression1, digits=3)
-plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
-HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2)
-Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+LOT.SIZE2 + YEAR.BUILT + DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
-stargazer(Regression1,Regression2 ,single.row = TRUE, type = "text")
+HOUSES$ZIP.OR.POSTAL.CODE <- as.factor(HOUSES$ZIP.OR.POSTAL.CODE) #Convert ZIP Codes to factor
+#Add years built, instead of assuming a straight line depreciation, we grouped the years built by <=1 year, 5 years, 10 years,
+#30 years, 50 years, 70 years, >70 years 
+HOUSES$YEAR.BUILT_cat <- ifelse(2021-HOUSES$YEAR.BUILT<=1, "Less than 1 year",
+                                ifelse(2021-HOUSES$YEAR.BUILT<=5, "1 to 5 years",
+                                       ifelse(2021-HOUSES$YEAR.BUILT<=10, "5 to 10 years",
+                                            ifelse(2021-HOUSES$YEAR.BUILT<=30, "10 to 30 years",
+                                              ifelse(2021-HOUSES$YEAR.BUILT<=50, "30 to 50 years",
+                                                ifelse(2021-HOUSES$YEAR.BUILT<=70, "50 to 70 years",
+                                                  ifelse(2021-HOUSES$YEAR.BUILT>70, "More than 70 years", NA)))))))
+table(HOUSES$YEAR.BUILT_cat)
+#regroup bins to get more even distribution 
+HOUSES$YEAR.BUILT_cat <- ifelse(2021-HOUSES$YEAR.BUILT<=5, "Less than 5 year",
+                                       ifelse(2021-HOUSES$YEAR.BUILT<=10, "5 to 10 years",
+                                            ifelse(2021-HOUSES$YEAR.BUILT<=50, "10 to 50 years",
+                                                ifelse(2021-HOUSES$YEAR.BUILT<=70, "50 to 70 years",
+                                                  ifelse(2021-HOUSES$YEAR.BUILT>70, "More than 70 years", NA)))))
+
+HOUSES$YEAR.BUILT_cat <- as.factor(HOUSES$YEAR.BUILT_cat )
+HOUSES$YEAR.BUILT_cat <- factor(HOUSES$YEAR.BUILT_cat, levels =c( "Less than 5 year", "5 to 10 years","10 to 50 years",
+                                                                 "50 to 70 years","More than 70 years") ) #arrange levels
+Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat+ DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
+Regression3<-lm(PRICE ~ SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat + DAYS.ON.MARKET, data = HOUSES)
+stargazer(Regression1,Regression2 , Regression3,single.row = TRUE, type = "text", title="Comparison of Regression 1, 2, and 3")
 ```
-* 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
-* After adding in quadratic term of lot size (to account for non-linear relationship), days on market (account for perception of desirability), and zip/postal code (to account for location), the new model accounts for 83.5% of the variation in house prices.  
+
+* Based on Regression(1), 74.6%  of the variation in home prices can be explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE , YEAR.BUILT). 
+* For Regression (2), we added in Days on Market to account for perception of desirability, and zip/postal code to account for location. We also converted Years Built from continuous variable to categorical by grouping them into <5 years, 5-10 years, 10-50 years, 50-70 years, and >70 years. The second model accounts for 84% of the variation in house prices. After accounting for the additional variables, we found that Beds, Baths, and City are not associated with House Price at 95% significance level. Compared to Houses built within 5 years,those built within 10 years do not have a statistically different price. However, those built more than 10 years have lower prices (with p<0.05). Moreover, we found that the longer the days on market, the lower the prices that houses were sold for (p<0.05). ZIP codes, however, were not significantly associated with house prices, potentially because of the lack of geographic variation in the data.  
+* Considering the outputs from Regression (1) and (2), we decided to run a final model (Regression 3) by dropping non-significant factors and keeping Square Feet, Lot Size, Year Built (categorical), and Days on Market. The resulting model has an R-squared of 0.836, which is 9% up from the initial regression (0.746).
 
 #### Problem 6
 > Try running your model to predict a typical home price. For example, what is the predicted sale price of a 2-bedroom, 2-bath home with 1,500 square feet? What is the 95% prediction interval?
 
 ```{r prob6}
 #assume other variables are at the mean values
-newdata <- data.frame(BEDS = 2, BATHS = 2, CITY = "Los Angeles", SQUARE.FEET = 1500,
-                      LOT.SIZE = mean(HOUSES$LOT.SIZE,na.rm=T), YEAR.BUILT = mean(HOUSES$YEAR.BUILT, na.rm=T))
-predict(Regression1, newdata, interval = "confidence", se.fit=T)
-predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T)
+mean_year_built <-  mean(HOUSES$YEAR.BUILT, na.rm=T)
+newdata <- data.frame(SQUARE.FEET = 1500,
+                      LOT.SIZE = mean(HOUSES$LOT.SIZE,na.rm=T), YEAR.BUILT_cat = "50 to 70 years", DAYS.ON.MARKET = mean(HOUSES$DAYS.ON.MARKET,na.rm=T) )
+predict(Regression3, newdata, interval = "confidence", se.fit=T)
 ```
-* Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, and a lot size of `r round(mean(HOUSES$LOT.SIZE,na.rm=T))` sq ft, and built in `r round(mean(HOUSES$YEAR.BUILT, na.rm=T))`, it will be sold at approximately $1,850,435 (95%CI: 1761074, 1939795).   
+* Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, a lot size of `r round(mean(HOUSES$LOT.SIZE,na.rm=T))` sq ft (mean of data), built in `r round(mean(HOUSES$YEAR.BUILT, na.rm=T))` (mean of data), and has been listed for `r round(mean(HOUSES$DAYS.ON.MARKET,na.rm=T))` days (mean of data), it will be sold at approximately $1,732,823 (95%CI: 1645502, 1820143).   
 
 #### Problem 7
-> How might you use your model to identify investment opportunities in the current housing market in your
-city?
+> How might you use your model to identify investment opportunities in the current housing market in your city?
 
 * Idea #1: If we plot the linear equation that comes from the linear regression, we can focus our attention on those outliers, which are under the line, and check why those houses differ from the price predictions of the model. If we cannot find a logical explanation, we can assume that these specific outliers are undervalued. We could buy that house and sell it for a profit.     
 
 * Idea #2: You could find information about houses that were sold a few years ago and use this information to review their current value. After you do that, you can offer to buy the house at a cheaper price than the one that the regression suggests, and then you could sell it for a profit. 
  
 #### Problem 8
-> Based on your first-hand knowledge of the city, what other variable(s) would you recommend including to
-better predict residential home prices? Pick one of these variables and collect the data for a small
-sample of the homes listed. What is the correlation between your new variable and sales price? Be
-creative!
+> Based on your first-hand knowledge of the city, what other variable(s) would you recommend including to better predict residential home prices? Pick one of these variables and collect the data for a small sample of the homes listed. What is the correlation between your new variable and sales price? Be creative!
 
 Mar Vista is a mostly suburban neighborhood to the west of the 405 and east of the 10. It has some hills, so we may see some variation in price based on elevation. It's also close to some major landmarks, so we assume that well see some variation from proximity to things like the beach, airport, and freeways. Because it's very residential, we also expect to see some variation based on proximity to parks and schools. There's also a cute little downtown strip on Venice and Centinela with shops, restaurants, and a fantastic farmer's market on the weekends. We'll examine the relationship between price and proximity to this area by measuring the distance from the house to the farmers market via Google Maps for a selection of 34 houses. 
 

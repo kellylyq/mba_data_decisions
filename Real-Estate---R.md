@@ -1,4 +1,4 @@
-RedFin Housing Prices for Mar vista
+RedFin Housing Prices for Mar Vista
 ================
 Section: B Learning Team: 8 Students: Alex MarMureanu, Caldwell Clarke,
 Lyle Seebeck, Kelly Li, Joaquin Trucco
@@ -11,6 +11,7 @@ library(ggridges)
 library(jtools)
 library(lmtest)
 library(stargazer)
+library(ggplot2)
 ```
 
 ##### Get the data set up
@@ -20,7 +21,7 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
                    stringsAsFactors = T)
 ```
 
-##### Notes on data selection
+##### Notes on preliminary data selection
 
 -   We are looking at single family homes in the Mar Vista area of LA
     that have been sold in the last 12 months.
@@ -52,15 +53,16 @@ HOUSES <- read.csv("~/Documents/UCLA MBA/Data and Decisions/mba_data_decisions/r
     -   X..SQUARE.FEET - $/Square Feet
     -   The remaining fields are internal and not useful
 
-##### Regression based on variables selected
+##### Preliminary regression based on variables selected
 
 ``` r
 Regression1 = lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET + LOT.SIZE + YEAR.BUILT, data = HOUSES)
 #summ(Regression1, digits=3)
-stargazer(Regression1,single.row = TRUE, type = "text")
+stargazer(Regression1,single.row = TRUE, type = "text", title = "Regression 1")
 ```
 
     ## 
+    ## Regression 1
     ## =====================================================
     ##                            Dependent variable:       
     ##                     ---------------------------------
@@ -161,12 +163,12 @@ stargazer(lm_prob3 ,single.row = TRUE, type = "text")
     ## Note:               *p<0.1; **p<0.05; ***p<0.01
 
 -   According to the information of regression 3, the coefficient of
-    BEDS is -6.1205228^{4}, meaning that for each additional bedroom,
-    the price of the house decreases by -6.1205228^{4} dollars and the
-    coefficient of BATHS is 6.6029661^{4}, meaning that for each
-    additional bathroom, the price of the house increases by
-    6.6029661^{4} dollars. Also both independent variables, BEDS and
-    BATHS, are not statistically significant.
+    BEDS is -61205.2, meaning that for each additional bedroom, the
+    price of the house decreases by -61205.2 dollars and the coefficient
+    of BATHS is 66029.7, meaning that for each additional bathroom, the
+    price of the house increases by 66029.7 dollars. Also both
+    independent variables, BEDS and BATHS, are not statistically
+    significant.
 
 #### Problem 4
 
@@ -203,6 +205,53 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 -   From the correlation tests above, we found that lot size is
     positively correlated with Price, Beds, Baths, and Square Feet.
 
+``` r
+ggplot(data = HOUSES, aes(x=LOT.SIZE, y=PRICE) ) + geom_point()+ggtitle("Scatter Plot of House Prices vs Lot Size in Mar Vista")
+```
+
+    ## Warning: Removed 1 rows containing missing values (geom_point).
+
+![](Real-Estate---R_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+-   Based on the scatter plot between price and lot size, it is not
+    clear whether the two variables are linearly correlated. Therefore,
+    we added the quadratic term of the lot size variable and compared
+    its regression coefficient with the regression using first power
+    only.
+
+``` r
+HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2) # add quadratic term for lot size
+linear_lotsize <- lm(data = HOUSES, PRICE~LOT.SIZE)
+quadratic_lotsize <- lm(data = HOUSES, PRICE~LOT.SIZE+LOT.SIZE2)
+stargazer(linear_lotsize , quadratic_lotsize, single.row = TRUE, type = "text", title="Comparison of the Addition of Quadratic Term on Linear Regression Outputs" )
+```
+
+    ## 
+    ## Comparison of the Addition of Quadratic Term on Linear Regression Outputs
+    ## =============================================================================
+    ##                                        Dependent variable:                   
+    ##                     ---------------------------------------------------------
+    ##                                               PRICE                          
+    ##                                 (1)                          (2)             
+    ## -----------------------------------------------------------------------------
+    ## LOT.SIZE                192.151*** (19.609)          253.903*** (68.785)     
+    ## LOT.SIZE2                                               -0.004 (0.004)       
+    ## Constant            949,423.100*** (129,640.900) 739,122.300*** (259,280.700)
+    ## -----------------------------------------------------------------------------
+    ## Observations                    331                          331             
+    ## R2                             0.226                        0.228            
+    ## Adjusted R2                    0.224                        0.223            
+    ## Residual Std. Error    691,787.500 (df = 329)       691,916.500 (df = 328)   
+    ## F Statistic           96.022*** (df = 1; 329)      48.431*** (df = 2; 328)   
+    ## =============================================================================
+    ## Note:                                             *p<0.1; **p<0.05; ***p<0.01
+
+-   Based on the regression outputs above, we could see that the
+    quadratic term of lot size has very little effect (coefficient =
+    -0.004) on the house price and is not statistically significant
+    (p&gt;0.05) at 95% confidence level. Therefore, we could confidently
+    incorporate lot size to our regression in its linear term only.
+
 #### Problem 5
 
 > What fraction of the variation in home prices is explained by your
@@ -211,50 +260,94 @@ cor(HOUSES$SQUARE.FEET, HOUSES$LOT.SIZE, use = "complete.obs")
 
 ``` r
 #summ(Regression1, digits=3)
-plot(HOUSES$PRICE ~ HOUSES$LOT.SIZE) # not linearly related
-```
-
-![](Real-Estate---R_files/figure-gfm/prob5-1.png)<!-- -->
-
-``` r
-HOUSES <- HOUSES %>% mutate(SQUARE.FEET2 = SQUARE.FEET^2,LOT.SIZE2 = LOT.SIZE^2)
-Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+LOT.SIZE2 + YEAR.BUILT + DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
-stargazer(Regression1,Regression2 ,single.row = TRUE, type = "text")
+HOUSES$ZIP.OR.POSTAL.CODE <- as.factor(HOUSES$ZIP.OR.POSTAL.CODE) #Convert ZIP Codes to factor
+#Add years built, instead of assuming a straight line depreciation, we grouped the years built by <=1 year, 5 years, 10 years,
+#30 years, 50 years, 70 years, >70 years 
+HOUSES$YEAR.BUILT_cat <- ifelse(2021-HOUSES$YEAR.BUILT<=1, "Less than 1 year",
+                                ifelse(2021-HOUSES$YEAR.BUILT<=5, "1 to 5 years",
+                                       ifelse(2021-HOUSES$YEAR.BUILT<=10, "5 to 10 years",
+                                            ifelse(2021-HOUSES$YEAR.BUILT<=30, "10 to 30 years",
+                                              ifelse(2021-HOUSES$YEAR.BUILT<=50, "30 to 50 years",
+                                                ifelse(2021-HOUSES$YEAR.BUILT<=70, "50 to 70 years",
+                                                  ifelse(2021-HOUSES$YEAR.BUILT>70, "More than 70 years", NA)))))))
+table(HOUSES$YEAR.BUILT_cat)
 ```
 
     ## 
-    ## =========================================================================================
-    ##                                              Dependent variable:                         
-    ##                     ---------------------------------------------------------------------
-    ##                                                     PRICE                                
-    ##                                    (1)                                (2)                
-    ## -----------------------------------------------------------------------------------------
-    ## BEDS                    -54,163.320 (37,065.290)           -31,874.280 (33,906.430)      
-    ## BATHS                  99,724.510*** (35,680.190)          61,175.220* (32,239.920)      
-    ## CITYMar Vista          -143,538.200 (105,102.300)          -93,289.520 (86,696.290)      
-    ## SQUARE.FEET                465.830*** (56.252)                514.560*** (53.139)        
-    ## LOT.SIZE                   103.960*** (13.629)                149.549*** (40.664)        
-    ## LOT.SIZE2                                                       -0.004 (0.002)           
-    ## YEAR.BUILT               3,212.676*** (956.488)             3,350.826*** (877.754)       
-    ## DAYS.ON.MARKET                                               -902.892*** (181.699)       
-    ## ZIP.OR.POSTAL.CODE                                          4,523.934* (2,403.289)       
-    ## Constant            -5,904,715.000*** (1,872,465.000) -413,662,027.000* (216,336,112.000)
-    ## -----------------------------------------------------------------------------------------
-    ## Observations                       321                                265                
-    ## R2                                0.746                              0.835               
-    ## Adjusted R2                       0.741                              0.829               
-    ## Residual Std. Error      382,049.500 (df = 314)             310,012.900 (df = 255)       
-    ## F Statistic             153.561*** (df = 6; 314)           142.873*** (df = 9; 255)      
-    ## =========================================================================================
-    ## Note:                                                         *p<0.1; **p<0.05; ***p<0.01
+    ##       1 to 5 years     10 to 30 years     30 to 50 years      5 to 10 years 
+    ##                 17                 15                  4                  8 
+    ##     50 to 70 years   Less than 1 year More than 70 years 
+    ##                 65                 42                178
 
--   74.6% of the variation in home prices can be explained by our
-    selected variables (BEDS, BATHS, CITY, SQUARE.FEET, LOT.SIZE ,
-    YEAR.BUILT).
--   After adding in quadratic term of lot size (to account for
-    non-linear relationship), days on market (account for perception of
-    desirability), and zip/postal code (to account for location), the
-    new model accounts for 83.5% of the variation in house prices.
+``` r
+#regroup bins to get more even distribution 
+HOUSES$YEAR.BUILT_cat <- ifelse(2021-HOUSES$YEAR.BUILT<=5, "Less than 5 year",
+                                       ifelse(2021-HOUSES$YEAR.BUILT<=10, "5 to 10 years",
+                                            ifelse(2021-HOUSES$YEAR.BUILT<=50, "10 to 50 years",
+                                                ifelse(2021-HOUSES$YEAR.BUILT<=70, "50 to 70 years",
+                                                  ifelse(2021-HOUSES$YEAR.BUILT>70, "More than 70 years", NA)))))
+
+HOUSES$YEAR.BUILT_cat <- as.factor(HOUSES$YEAR.BUILT_cat )
+HOUSES$YEAR.BUILT_cat <- factor(HOUSES$YEAR.BUILT_cat, levels =c( "Less than 5 year", "5 to 10 years","10 to 50 years",
+                                                                 "50 to 70 years","More than 70 years") ) #arrange levels
+Regression2<-lm(PRICE ~ BEDS + BATHS + CITY + SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat+ DAYS.ON.MARKET + ZIP.OR.POSTAL.CODE, data = HOUSES)
+Regression3<-lm(PRICE ~ SQUARE.FEET+ LOT.SIZE+ YEAR.BUILT_cat + DAYS.ON.MARKET, data = HOUSES)
+stargazer(Regression1,Regression2 , Regression3,single.row = TRUE, type = "text", title="Comparison of Regression 1, 2, and 3")
+```
+
+    ## 
+    ## Comparison of Regression 1, 2, and 3
+    ## ============================================================================================================================
+    ##                                                                      Dependent variable:                                    
+    ##                                  -------------------------------------------------------------------------------------------
+    ##                                                                             PRICE                                           
+    ##                                                 (1)                            (2)                          (3)             
+    ## ----------------------------------------------------------------------------------------------------------------------------
+    ## BEDS                                 -54,163.320 (37,065.290)        -21,654.040 (33,697.980)                               
+    ## BATHS                               99,724.510*** (35,680.190)       49,759.390 (32,589.970)                                
+    ## CITYMar Vista                       -143,538.200 (105,102.300)       -57,418.400 (86,416.220)                               
+    ## SQUARE.FEET                             465.830*** (56.252)            544.977*** (52.528)          582.847*** (31.415)     
+    ## LOT.SIZE                                103.960*** (13.629)             88.301*** (12.347)           85.269*** (12.163)     
+    ## YEAR.BUILT                            3,212.676*** (956.488)                                                                
+    ## YEAR.BUILT_cat5 to 10 years                                         -32,453.420 (126,104.300)     8,381.814 (124,486.400)   
+    ## YEAR.BUILT_cat10 to 50 years                                       -347,244.500*** (86,151.550) -367,236.000*** (85,011.170)
+    ## YEAR.BUILT_cat50 to 70 years                                       -240,201.200*** (75,165.620) -257,154.700*** (74,450.150)
+    ## YEAR.BUILT_catMore than 70 years                                   -272,861.400*** (68,942.590) -302,751.000*** (67,094.210)
+    ## DAYS.ON.MARKET                                                        -869.911*** (178.820)        -875.945*** (177.591)    
+    ## ZIP.OR.POSTAL.CODE90066                                             141,696.300* (75,934.510)                               
+    ## Constant                         -5,904,715.000*** (1,872,465.000) 584,424.600*** (136,121.700) 735,813.400*** (100,471.800)
+    ## ----------------------------------------------------------------------------------------------------------------------------
+    ## Observations                                    321                            265                          265             
+    ## R2                                             0.746                          0.840                        0.836            
+    ## Adjusted R2                                    0.741                          0.833                        0.832            
+    ## Residual Std. Error                   382,049.500 (df = 314)          306,079.800 (df = 253)       307,055.600 (df = 257)   
+    ## F Statistic                          153.561*** (df = 6; 314)       120.701*** (df = 11; 253)     187.668*** (df = 7; 257)  
+    ## ============================================================================================================================
+    ## Note:                                                                                            *p<0.1; **p<0.05; ***p<0.01
+
+-   Based on Regression(1), 74.6% of the variation in home prices can be
+    explained by our selected variables (BEDS, BATHS, CITY, SQUARE.FEET,
+    LOT.SIZE , YEAR.BUILT).
+-   For Regression (2), we added in Days on Market to account for
+    perception of desirability, and zip/postal code to account for
+    location. We also converted Years Built from continuous variable to
+    categorical by grouping them into &lt;5 years, 5-10 years, 10-50
+    years, 50-70 years, and &gt;70 years. The second model accounts for
+    84% of the variation in house prices. After accounting for the
+    additional variables, we found that Beds, Baths, and City are not
+    associated with House Price at 95% significance level. Compared to
+    Houses built within 5 years,those built within 10 years do not have
+    a statistically different price. However, those built more than 10
+    years have lower prices (with p&lt;0.05). Moreover, we found that
+    the longer the days on market, the lower the prices that houses were
+    sold for (p&lt;0.05). ZIP codes, however, were not significantly
+    associated with house prices, potentially because of the lack of
+    geographic variation in the data.  
+-   Considering the outputs from Regression (1) and (2), we decided to
+    run a final model (Regression 3) by dropping non-significant factors
+    and keeping Square Feet, Lot Size, Year Built (categorical), and
+    Days on Market. The resulting model has an R-squared of 0.836, which
+    is 9% up from the initial regression (0.746).
 
 #### Problem 6
 
@@ -264,31 +357,29 @@ stargazer(Regression1,Regression2 ,single.row = TRUE, type = "text")
 
 ``` r
 #assume other variables are at the mean values
-newdata <- data.frame(BEDS = 2, BATHS = 2, CITY = "Los Angeles", SQUARE.FEET = 1500,
-                      LOT.SIZE = mean(HOUSES$LOT.SIZE,na.rm=T), YEAR.BUILT = mean(HOUSES$YEAR.BUILT, na.rm=T))
-predict(Regression1, newdata, interval = "confidence", se.fit=T)
+mean_year_built <-  mean(HOUSES$YEAR.BUILT, na.rm=T)
+newdata <- data.frame(SQUARE.FEET = 1500,
+                      LOT.SIZE = mean(HOUSES$LOT.SIZE,na.rm=T), YEAR.BUILT_cat = "50 to 70 years", DAYS.ON.MARKET = mean(HOUSES$DAYS.ON.MARKET,na.rm=T) )
+predict(Regression3, newdata, interval = "confidence", se.fit=T)
 ```
 
     ## $fit
     ##       fit     lwr     upr
-    ## 1 1850435 1761074 1939795
+    ## 1 1732823 1645502 1820143
     ## 
     ## $se.fit
-    ## [1] 45417.18
+    ## [1] 44342.3
     ## 
     ## $df
-    ## [1] 314
+    ## [1] 257
     ## 
     ## $residual.scale
-    ## [1] 382049.5
+    ## [1] 307055.6
 
-``` r
-predict_price <- predict(Regression1, newdata, interval = "confidence", se.fit=T)
-```
-
--   Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, and
-    a lot size of 6320 sq ft, and built in 1964, it will be sold at
-    approximately $1,850,435 (95%CI: 1761074, 1939795).
+-   Assuming a typical home has 2 bedrooms, 2 bathrooms, 1500 sq ft, a
+    lot size of 6320 sq ft (mean of data), built in 1964 (mean of data),
+    and has been listed for 182 days (mean of data), it will be sold at
+    approximately $1,732,823 (95%CI: 1645502, 1820143).
 
 #### Problem 7
 
